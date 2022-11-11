@@ -1,10 +1,11 @@
-import { useState } from 'react';
 import '../App.css';
 
 const JoinButton = (props) => {
   return(
     <button
-      className="spin"
+      className='pulse'
+      id='joinbtn'
+      name='joinbtn'
       onClick={props.handler}
     >
       JOIN
@@ -16,7 +17,7 @@ const RoomNameField = (props) => {
   return (
     <div>
       <input
-        type="text"
+        type='text'
         id='rnamefield'
         name='rnamefield'
         onChange={props.handler}
@@ -26,24 +27,16 @@ const RoomNameField = (props) => {
 }
 
 const Frontpage = (props) => {
-  const [input, setInput] = useState('')
-
-  
-
-  function handleJoin(roomName) {
-    setInput(props.roomName)
-  }
 
   return(
-    <div>
-      <p className='funy'>You are on the frontpage</p>
+    <div className='frontpage'>
+      <h3 className='funy'>You are on the frontpage</h3>
       <RoomNameField
-        handler={props.handleRoomNameChange}
+        handler={props.handleRoomNameInputChange}
       />
       <JoinButton
-        handler={handleJoin}
+        handler={props.handleJoinBtnPress}
       />
-      <p>{input}</p>
     </div>
   )
 }
