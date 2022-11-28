@@ -1,8 +1,11 @@
-import { useState } from 'react';
+// import { useState } from 'react';
+import React, { Component } from 'react';
 import './App.css';
-import Frontpage from './components/Frontpage';
-import Lobby from './components/Lobby';
+// import Frontpage from './components/Frontpage';
+// import Lobby from './components/Lobby';
+import ChatBox from './Chatbox';
 
+/*
 const App = () => {
   const [currentPage, setCurrentPage] = useState('frontpage')
 
@@ -14,6 +17,42 @@ const App = () => {
     setRoomNameInput(event.target.value)
   }
 
+  */
+
+  class App extends Component {
+    constructor(props) {
+      super(props);
+      this.state = {
+        chatLog: []
+      }
+    }
+    
+    addChat = (name, message, alert = false) => {
+      this.setState({ chatLog: this.state.chatLog.concat({
+        name,
+        message: `${message}`,
+        timestamp: `${Date.now()}`,
+        alert
+      })});
+    }
+    
+    render() {
+      const { chatLog } = this.state;
+      return (
+        <div className="App">
+          <ChatBox
+            chatLog={chatLog}
+            onSend={(msg) => msg && this.addChat('Me', msg)}
+          />
+        </div>
+      );
+    }
+  }
+
+
+
+
+  /*
   // if no room name known yet, sets the room name and joins the room
   // if room name has been set,
   // then checks if the user entered the correct room name
@@ -76,5 +115,5 @@ const App = () => {
   }
 
 }
-
+*/
 export default App;
