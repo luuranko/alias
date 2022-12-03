@@ -5,6 +5,9 @@ import './App.css';
 // import Lobby from './components/Lobby';
 import ChatBox from './Chatbox';
 
+import socketIO from "socket.io-client"
+const socket = socketIO.connect("http://localhost:4000")
+
 /*
 const App = () => {
   const [currentPage, setCurrentPage] = useState('frontpage')
