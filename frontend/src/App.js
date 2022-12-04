@@ -6,7 +6,10 @@ import './App.css';
 import ChatBox from './Chatbox';
 
 import socketIO from "socket.io-client"
+import p2p from "socket.io-p2p"
+
 const socket = socketIO.connect("http://localhost:4000")
+const p2psocket = new p2p(socket)
 
 /*
 const App = () => {
@@ -30,6 +33,7 @@ const App = () => {
       }
     }
     
+
     addChat = (name, message, alert = false) => {
       this.setState({ chatLog: this.state.chatLog.concat({
         name,
@@ -47,11 +51,15 @@ const App = () => {
             chatLog={chatLog}
             onSend={(msg) => msg && this.addChat('Me', msg)}
           />
+         <button onClick={goPrivate}>GO P2P</button> 
         </div>
       );
     }
   }
 
+  const goPrivate = () => {
+    console.log('going private')
+  }
 
 
 
