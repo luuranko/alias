@@ -6,10 +6,13 @@ import './App.css';
 import ChatBox from './Chatbox';
 
 import socketIO from "socket.io-client"
-import p2p from "socket.io-p2p"
+// P2P STUFF:
+//import p2p from "socket.io-p2p"
 
 const socket = socketIO.connect("http://localhost:4000")
-const p2psocket = new p2p(socket)
+const p2psocket = socket
+// P2P STUFF:
+// const p2psocket = new p2p(socket, {autoUpgrade: false})
 
 /*
 const App = () => {
@@ -32,9 +35,10 @@ const App = () => {
         chatLog: []
       }
     }
-    
+
 
     addChat = (name, message, alert = false) => {
+      p2psocket.emit('message', message)
       this.setState({ chatLog: this.state.chatLog.concat({
         name,
         message: `${message}`,
@@ -45,21 +49,39 @@ const App = () => {
     
     render() {
       const { chatLog } = this.state;
+/*      
+      const addToChat = (data) => {
+        this.addChat(data, 'someone')
+      }
+*/
       return (
         <div className="App">
           <ChatBox
             chatLog={chatLog}
-            onSend={(msg) => msg && this.addChat('Me', msg)}
+            onSend={(msg) => msg && this.addChat(p2psocket.id, msg)}
           />
-         <button onClick={goPrivate}>GO P2P</button> 
+         <button onClick={goP2P}>GO P2P</button> 
         </div>
       );
     }
   }
 
-  const goPrivate = () => {
+  p2psocket.on('message', function(data) {
+    console.log('a message was detected:')
+    console.log(data)
+//    App.addToChat(data)
+    App.addChat('someone', data)
+  });
+
+  const goP2P = () => {
     console.log('going private')
+  /* P2P STUFF
+    p2psocket.emit('go-private', true)
+    p2psocket.upgrade()
+  */
   }
+
+
 
 
 
