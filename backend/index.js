@@ -27,8 +27,8 @@ socketIO.on('connection', function (socket) {
   });
 
   socket.on('message', function(data) {
-    console.log('a message was sent by a user:')
-    console.log(data)
+    console.log('a message was sent by user', socket.id, data)
+    console.log('emitting message to other users')
     socket.broadcast.emit('message', data)
   });
 

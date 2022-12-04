@@ -1,5 +1,5 @@
 // import { useState } from 'react';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 // import Frontpage from './components/Frontpage';
 // import Lobby from './components/Lobby';
@@ -28,47 +28,49 @@ const App = () => {
 
   */
 
-  class App extends Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        chatLog: []
+  const App = () => {
+    const [chatLog, setChatLog] = useState([])
+
+    const addChat = (name, message, alert = false) => {
+      console.log('about to add to chat:', name, message)
+      
+      if (name !== 'someone') {
+        console.log('this message was sent by myself. sharing my message to server.')
+        p2psocket.emit('message', message)
       }
-    }
 
-
-    addChat = (name, message, alert = false) => {
-      p2psocket.emit('message', message)
+      const newMsg = {
+        name, 
+        message: message, 
+        timestamp: Date.now()
+      }
+      setChatLog(chatLog.concat(newMsg))
+     /*
       this.setState({ chatLog: this.state.chatLog.concat({
         name,
         message: `${message}`,
         timestamp: `${Date.now()}`,
         alert
       })});
+      */
     }
-    
-    render() {
-      const { chatLog } = this.state;
-/*      
-      const addToChat = (data) => {
-        this.addChat(data, 'someone')
-      }
-*/
-      return (
-        <div className="App">
-          <ChatBox
-            chatLog={chatLog}
-            onSend={(msg) => msg && this.addChat(p2psocket.id, msg)}
-          />
-         <button onClick={goP2P}>GO P2P</button> 
-        </div>
-      );
+   /* 
+    const addToChat = (data) => {
+      this.addChat(data, 'someone')
     }
-  }
+    */
+    return (
+      <div className="App">
+        <ChatBox
+          chatLog={chatLog}
+          onSend={(msg) => msg && addChat(p2psocket.id, msg)}
+        />
+      <button onClick={goP2P}>GO P2P</button> 
+    </div>
+    );}
 
   p2psocket.on('message', function(data) {
-    console.log('a message was detected:')
-    console.log(data)
+    console.log('a message was detected:', data)
 //    App.addToChat(data)
     App.addChat('someone', data)
   });
