@@ -20,16 +20,18 @@ var clients = []
 socketIO.on('connection', function (socket) {
   console.log(`a user connected! ${socket.id}`) 
   clients[socket.id] = socket
-    
+
   socket.on('disconnect', () => {
     console.log('a user disconnected.');
+    // socket.broadcast.emit('disconnected', socket.id)
     socket.disconnect()
   });
 
-  socket.on('message', function(data) {
-    console.log('a message was sent by user', socket.id, data)
+  // data = {name: name, message: message}
+  socket.on('message', (msg) => {
+    console.log('Message detected on server side, sender is socket', socket.id, 'with msg', msg)
     console.log('emitting message to other users')
-    socket.broadcast.emit('message', data)
+    socket.broadcast.emit('message', msg)
   });
 
   socket.on('go-private', function(data) {
