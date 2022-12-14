@@ -1,16 +1,15 @@
+import p2p from "socket.io-p2p"
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import ChatBox from './Chatbox';
 import socketIO from "socket.io-client"
 
 const socket = socketIO.connect("http://localhost:4000")
-const p2psocket = socket
+// const p2psocket = socket
+
 
 // P2P STUFF:
-//import p2p from "socket.io-p2p"
-
-// P2P STUFF:
-// const p2psocket = new p2p(socket, {autoUpgrade: false})
+const p2psocket = new p2p(socket, {autoUpgrade: false})
 
 
 const App = () => {
@@ -25,14 +24,14 @@ const App = () => {
       setChatLog((chatLog)=>[...chatLog, msg])
     });
 
-    // p2psocket.on('go-private', () => {
-    //   console.log('Received go-private signal, going to upgrade')
-    //   p2psocket.upgrade();
-    // })
+    p2psocket.on('go-private', () => {
+      console.log('Received go-private signal, going to upgrade')
+      p2psocket.upgrade();
+    })
 
     return () => {
       p2psocket.off('message');
-      // p2psocket.off('go-private')
+      p2psocket.off('go-private')
     }
 
   }, [])
@@ -51,10 +50,10 @@ const App = () => {
   }
   const goP2P = () => {
     console.log('going private')
-  /* P2P STUFF
+  /* P2P STUFF */
     p2psocket.emit('go-private', true)
     p2psocket.upgrade()
-  */
+  
   }
   return (
     <div className="App">

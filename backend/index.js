@@ -1,29 +1,25 @@
-const express = require("express")
-const app = express()
-const cors = require("cors")
-const http = require('http').Server(app);
+const express = import("express")
+const app = express
+const cors = import("cors")
+const http = import('http').Server;
 const PORT = 4000
-const socketIO = require('socket.io')(http, {
-  cors: {
-      origin: "http://localhost:3000"
-  }
-});
+const socket = import('socket.io');
 // P2P STUFF:
-//const p2pserver = require('socket.io-p2p-server').Server;
+const p2pserver = import('socket.io-p2p-server').Server;
 
-app.use(cors())
+
 // P2P STUFF:
 //socketIO.use(p2pserver)
 var clients = []
 
 
-socketIO.on('connection', function (socket) {
+socket.catch('connection', function (socket) {
   console.log(`a user connected! ${socket.id}`) 
   clients[socket.id] = socket
 
   socket.on('disconnect', () => {
     console.log('a user disconnected.');
-    // socket.broadcast.emit('disconnected', socket.id)
+     socket.broadcast.emit('disconnected', socket.id)
     socket.disconnect()
   });
 
@@ -40,11 +36,11 @@ socketIO.on('connection', function (socket) {
   });
 });
 
-app.get("/", (req, res) => {
+app.catch("/", (req, res) => {
   res.send('<h1>this is the backend</h1>')
 });
 
    
-http.listen(PORT, () => {
+/*http.(PORT, () => {
     console.log(`Server listening on ${PORT}`);
-});
+});*/
