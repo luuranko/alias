@@ -15,11 +15,14 @@ const p2psocket = socket
 
 const App = () => {
   const [chatLog, setChatLog] = useState([])
+  const [p2pIsOn, setp2pIsOn] = useState(false)
 
-  console.log('RERENDER! Own socket id:', p2psocket.id)
+  console.log('RERENDER! Own socket id:', p2psocket.id, 'p2pIsOn:', p2pIsOn)
 
+  // Set up listeners HERE
   useEffect(() => {
 
+    // Receives message delivered via SERVER
     p2psocket.on('message', (msg) => {
       console.log(`${p2psocket.id} received message ${msg}`)
       setChatLog((chatLog)=>[...chatLog, msg])
@@ -37,7 +40,8 @@ const App = () => {
 
   }, [])
 
-  function addChat(name, id, message) {
+  // Checks whether to send msg to server or peers
+  function sendMessage (name, id, message) {
     console.log('about to send:', name, message)
 
     const newMsg = {
@@ -46,21 +50,38 @@ const App = () => {
       message: message, 
       timestamp: Date.now()
     }
+
+    if (p2pIsOn) {
+      sendToPeers(newMsg)
+    } else {
+      sendToServer(newMsg)
+    }
+  }
+
+  function sendToServer(newMsg) {
+    console.log('SENDING MSG TO SERVER:', newMsg)
+
     p2psocket.emit('message', newMsg)
     setChatLog(chatLog.concat(newMsg))
   }
+
+  function sendToPeers(newMsg) {
+    console.log('SENDING MSG TO PEERS:', newMsg)
+    // MAGIC TBA
+    // setChatLog(chatLog.concat(newMsg))
+  }
+
   const goP2P = () => {
     console.log('going private')
-  /* P2P STUFF
-    p2psocket.emit('go-private', true)
-    p2psocket.upgrade()
-  */
+    p2psocket.emit('disconnect')
+    setp2pIsOn(true)
   }
+
   return (
     <div className="App">
       <ChatBox
         chatLog={chatLog}
-        onSend={(msg) => msg && addChat(p2psocket.id, p2psocket.id, msg)}
+        onSend={(msg) => msg && sendMessage(p2psocket.id, p2psocket.id, msg)}
       />
       <button onClick={goP2P}>GO P2P</button> 
     </div>
