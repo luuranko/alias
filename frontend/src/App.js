@@ -73,7 +73,7 @@ const App = () => {
 
   const goP2P = () => {
     console.log('going private')
-    p2psocket.emit('disconnect')
+    p2psocket.disconnect()
     setp2pIsOn(true)
   }
 
