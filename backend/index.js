@@ -8,35 +8,39 @@ const socketIO = require('socket.io')(http, {
       origin: "http://localhost:3000"
   }
 });
-// P2P STUFF:
-//const p2pserver = require('socket.io-p2p-server').Server;
-
 app.use(cors())
-// P2P STUFF:
-//socketIO.use(p2pserver)
-var clients = []
-
+var clients = [] 
+var peers = {}
 
 socketIO.on('connection', function (socket) {
-  console.log(`a user connected! ${socket.id}`) 
+  console.log(`a user connected! ${socket.id}`)
   clients[socket.id] = socket
 
   socket.on('disconnect', () => {
     console.log('a user disconnected.');
-    // socket.broadcast.emit('disconnected', socket.id)
+    if (peers[socket.id] !== null) {
+      peers[socket.id] = null
+    }
     socket.disconnect()
   });
+  
+  socket.on('peer', (peer) => {
+    console.log('Received a peer', peer.channelName)
+    peers[socket.id] = peer
+  });
 
-  // data = {name: name, message: message}
   socket.on('message', (msg) => {
     console.log('Message detected on server side, sender is socket', socket.id, 'with msg', msg)
     console.log('emitting message to other users')
     socket.broadcast.emit('message', msg)
   });
 
-  socket.on('go-private', function(data) {
-    console.log('a client emitted go-private')
-    socket.broadcast.emit('go-private', data);
+  // When a single node emits goP2P
+  // Server emits it to every node and gives the list of peers
+  socket.on('goP2P', function(data) {
+    console.log('a client emitted goP2P')
+    socket.broadcast.emit('startP2P', peers);
+    socket.emit('startP2P', peers)
   });
 });
 
