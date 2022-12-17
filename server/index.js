@@ -9,24 +9,35 @@ const socketIO = require('socket.io')(http, {
   }
 });
 app.use(cors())
-var clients = [] 
+
+//var clients = [] 
 var peers = {}
+var peerLookup = []
 
 socketIO.on('connection', function (socket) {
   console.log(`a user connected! ${socket.id}`)
-  clients[socket.id] = socket
+  
+//  clients[socket.id] = socket
+  if (!peerLookup.includes(socket.id)) {
+    peerLookup.concat(socket.id)
+  }
 
   socket.on('disconnect', () => {
     console.log('a user disconnected.');
-    if (peers[socket.id] !== null) {
-      peers[socket.id] = null
+    if (peerLookup[socket.id] !== null) {
+      var index = peerLookup.indexOf(socket.id)
+      peerLookup.splice(index, 1)
+      delete peers[socket.id] 
     }
     socket.disconnect()
   });
   
-  socket.on('peer', (peer) => {
-    console.log('Received a peer', peer.channelName)
-    peers[socket.id] = peer
+  socket.on('peer', (info) => {
+    console.log('Received peer info', info)
+    if (!peerLookup.includes(info.user)) {
+      peers[socket.id] = info
+    }
+    console.log('peers: ', peers)
   });
 
   socket.on('message', (msg) => {
@@ -37,11 +48,19 @@ socketIO.on('connection', function (socket) {
 
   // When a single node emits goP2P
   // Server emits it to every node and gives the list of peers
+  /*
   socket.on('goP2P', function(data) {
     console.log('a client emitted goP2P')
     socket.broadcast.emit('startP2P', peers);
     socket.emit('startP2P', peers)
   });
+  */
+
+  socket.on('goP2P', ({ signal }) => {
+    io.to(Object.keys(clients)[0]).emit('connect peer', {signal})
+
+  })
+
 });
 
 app.get("/", (req, res) => {

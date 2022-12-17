@@ -7,41 +7,31 @@ const socket = socketIO.connect("http://localhost:4000")
 
 const Peer = require('simple-peer')
 
+
 const App = () => {
   const [chatLog, setChatLog] = useState([])
   const [p2pIsOn, setp2pIsOn] = useState(false)
-  const [peerlist, setPeerList] = useState([])
   const peerInstance = useRef()
 
-  console.log(
-    'RERENDER! Own socket id:', socket.id,
-    'p2pIsOn:', p2pIsOn,
-    'peerInstance:', peerInstance,
-    'peerList:', peerlist
-  )
+  const peer0 = new Peer({ initiator: true, trickle: false })
 
+  peer0.on('signal', (data) => {
+    console.log('p0 signaled! data: ', data)
+    console.log('emitting peer info to server')
+    socket.emit('peer', {user: socket.id, data: data})
+  })
+  
   // Set up listeners HERE
   useEffect(() => {
 
     // When first gets connected to SERVER
     socket.on('connect', () => {
+      console.log('socket connected to server')
       // Sends the peer information of this web client
-      const thisPeer = new Peer({ initiator: true})
-      peerInstance.current = thisPeer
-      socket.emit('peer', thisPeer)
+//      console.log('peer0:', peer0)
+//      socket.emit('peer', peer0)
     })
 
-    // Starts P2P connection
-    socket.on('startP2P', (peers) => {
-      console.log('Received startP2P signal from server')
-      console.log(peers)
-      setp2pIsOn(true)
-      
-      const modifiedPeers = removeSelfFromPeerList(peers) 
-      setPeerList(modifiedPeers)
-      
-      createP2PListeners()
-    })
 
     // Receives message delivered via SERVER
     socket.on('message', (msg) => {
@@ -56,16 +46,7 @@ const App = () => {
     }
 
   }, [])
-
-  function removeSelfFromPeerList (peerList) {
-      delete peerList[socket.id]
-      return peerList
-  }
-
-  function createP2PListeners () {
-    console.log('Creating P2P listeners')
-  }
-
+  
   // Checks whether to send msg to server or peers
   function sendMessage (name, id, message) {
     console.log('about to send:', name, message)
@@ -85,8 +66,6 @@ const App = () => {
   }
 
   function sendToServer(newMsg) {
-    console.log('SENDING MSG TO SERVER:', newMsg)
-
     socket.emit('message', newMsg)
     setChatLog(chatLog.concat(newMsg))
   }
@@ -102,7 +81,7 @@ const App = () => {
   // by telling the server to start it for EVERYONE
   const goP2P = () => {
     console.log('going private')
-    socket.emit('goP2P')
+//    socket.emit('goP2P')
     setp2pIsOn(true)
   }
 
@@ -111,6 +90,7 @@ const App = () => {
     peerInstance.destroy()
     setp2pIsOn(false)
   }
+  
 
   return (
     <div className="App">
