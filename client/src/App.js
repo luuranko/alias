@@ -36,8 +36,10 @@ const App = () => {
       console.log('Received startP2P signal from server')
       console.log(peers)
       setp2pIsOn(true)
-      const modifiedPeers = peers
-      setPeerList(modifiedPeers)
+      var modifiedPeers = peers
+      delete modifiedPeers[socket.id]
+      const modifiedPeers2 = modifiedPeers
+      setPeerList(modifiedPeers2)
       createP2PListeners()
     })
 
