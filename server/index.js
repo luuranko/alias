@@ -10,14 +10,12 @@ const socketIO = require('socket.io')(http, {
 });
 app.use(cors())
 
-//var clients = [] 
 var peers = {}
 var peerLookup = []
 
 socketIO.on('connection', function (socket) {
   console.log(`a user connected! ${socket.id}`)
   
-//  clients[socket.id] = socket
   if (!peerLookup.includes(socket.id)) {
     peerLookup.concat(socket.id)
   }

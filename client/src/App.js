@@ -12,14 +12,6 @@ const App = () => {
   const [chatLog, setChatLog] = useState([])
   const [p2pIsOn, setp2pIsOn] = useState(false)
   const peerInstance = useRef()
-
-  const peer0 = new Peer({ initiator: true, trickle: false })
-
-  peer0.on('signal', (data) => {
-    console.log('p0 signaled! data: ', data)
-    console.log('emitting peer info to server')
-    socket.emit('peer', {user: socket.id, data: data})
-  })
   
   // Set up listeners HERE
   useEffect(() => {
@@ -27,9 +19,12 @@ const App = () => {
     // When first gets connected to SERVER
     socket.on('connect', () => {
       console.log('socket connected to server')
-      // Sends the peer information of this web client
-//      console.log('peer0:', peer0)
-//      socket.emit('peer', peer0)
+      const peer0 = new Peer({ initiator: true, trickle: false })
+      peer0.on('signal', (data) => {
+        console.log('p0 signaled! data: ', data)
+        console.log('emitting peer info to server')
+        socket.emit('peer', {user: socket.id, data: data})
+      })
     })
 
 
