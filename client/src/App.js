@@ -19,12 +19,6 @@ const App = () => {
     // When first gets connected to SERVER
     socket.on('connect', () => {
       console.log('socket connected to server')
-      const peer0 = new Peer({ initiator: true, trickle: false })
-      peer0.on('signal', (data) => {
-        console.log('p0 signaled! data: ', data)
-        console.log('emitting peer info to server')
-        socket.emit('peer', {user: socket.id, data: data})
-      })
     })
 
 
@@ -41,6 +35,17 @@ const App = () => {
     }
 
   }, [])
+
+  useEffect(() => {
+    if(p2pIsOn) {
+      const peer0 = new Peer({ initiator: true, trickle: false })
+      peer0.on('signal', (data) => {
+        console.log('p0 signaled! data: ', data)
+        console.log('emitting peer info to server')
+        socket.emit('peer', {user: socket.id, data: data})
+      })
+    }
+  }, [p2pIsOn])
   
   // Checks whether to send msg to server or peers
   function sendMessage (name, id, message) {
@@ -82,7 +87,7 @@ const App = () => {
 
   const destroyP2P = () => {
     console.log('destroying P2P connection')
-    peerInstance.destroy()
+    
     setp2pIsOn(false)
   }
   
@@ -93,8 +98,14 @@ const App = () => {
         chatLog={chatLog}
         onSend={(msg) => msg && sendMessage(socket.id, socket.id, msg)}
       />
-      <button onClick={goP2P}>GO P2P</button> 
-      <button onClick={destroyP2P}>Disconnect P2P</button>
+      <button
+        onClick={goP2P}
+        disabled={p2pIsOn}
+      >GO P2P</button> 
+      <button
+        onClick={destroyP2P}
+        disabled={!p2pIsOn}
+      >Disconnect P2P</button>
     </div>
   );
 }
