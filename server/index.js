@@ -17,7 +17,8 @@ socketIO.on('connection', function (socket) {
   console.log(`a user connected! ${socket.id}`)
   
   if (!peerLookup.includes(socket.id)) {
-    peerLookup.concat(socket.id)
+    peerLookup.push(socket.id)
+    console.log(peerLookup)
   }
 
   socket.on('disconnect', () => {
@@ -29,13 +30,12 @@ socketIO.on('connection', function (socket) {
     }
     socket.disconnect()
   });
-  
-  socket.on('peer', (info) => {
-    console.log('Received peer info', info)
-    if (!peerLookup.includes(info.user)) {
-      peers[socket.id] = info
-    }
-    console.log('peers: ', peers)
+ 
+  // Catches offer data sent by clients, and sends it to the second node in peerLookup using signal 'request_sent'
+  socket.on('offer', (data) => {
+    console.log('Received offer data', data)
+//    sendOffer(peerLookup[1], data)
+    socket.to(peerLookup[1]).emit('request_sent', data)
   });
 
   socket.on('message', (msg) => {
@@ -44,22 +44,26 @@ socketIO.on('connection', function (socket) {
     socket.broadcast.emit('message', msg)
   });
 
-  // When a single node emits goP2P
-  // Server emits it to every node and gives the list of peers
-  /*
-  socket.on('goP2P', function(data) {
-    console.log('a client emitted goP2P')
-    socket.broadcast.emit('startP2P', peers);
-    socket.emit('startP2P', peers)
-  });
-  */
-
-  socket.on('goP2P', ({ signal }) => {
-    io.to(Object.keys(clients)[0]).emit('connect peer', {signal})
-
+  // When receives a 'goP2P' signal, sends out 'startP2P' to the first two nodes in peerLookup.
+  // The first node gets initiator: true, the second one initiator: false as arguments
+  socket.on('goP2P', () => {
+    console.log('In Server, socket.on.goP2P')
+    console.log('peerlookup[0]: ', peerLookup[0])
+    console.log('peerlookup[1]:', peerLookup[1])
+    socketIO.to(peerLookup[0]).emit('startP2P', true)
+    socketIO.to(peerLookup[1]).emit('startP2P', false)
   })
 
+  socket.on('accept_request', (data) => {
+    socketIO.to(socket).emit('connect_to_initiator', data)
+  })
 });
+
+
+
+const sendOffer = (to, data) => {
+  socketIO.to(to).emit('request_sent', data)
+}
 
 app.get("/", (req, res) => {
   res.send('<h1>this is the backend</h1>')
