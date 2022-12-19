@@ -45,13 +45,13 @@ socketIO.on('connection', function (socket) {
   });
 
   // When receives a 'goP2P' signal, sends out 'startP2P' to the first two nodes in peerLookup.
-  // The first node gets initiator: true, the second one initiator: false as arguments
+  // The first node gets 'initiator: true', the second one 'initiator: false' as arguments
   socket.on('goP2P', () => {
     console.log('In Server, socket.on.goP2P')
     console.log('peerlookup[0]: ', peerLookup[0])
     console.log('peerlookup[1]:', peerLookup[1])
     socketIO.to(peerLookup[0]).emit('startP2P', true)
-    socketIO.to(peerLookup[1]).emit('startP2P', false)
+//    socketIO.to(peerLookup[1]).emit('startP2P', false)
   })
 
   socket.on('accept_request', (data) => {

@@ -12,12 +12,17 @@ const App = () => {
   const [chatLog, setChatLog] = useState([])
   const [p2pIsOn, setp2pIsOn] = useState(false)
   const [receivedRequest, setReceivedRequest] = useState(false)
-  const [peerA, setPeerA] = useState(null)
+  const [peerA, setPeerA] = useState('')
+//  const [temp_peer, setTemp_peer] = useState(null)
+  const [initiator, setInitiator] = useState(null)
   const peerInstance = useRef()
-  const [currentOffer, setCurrentOffer] = useState(null)
-  
-  console.log('peerA is:', peerA)
-  console.log('currentOffer:', currentOffer)
+  const [currentOffer, setCurrentOffer] = useState('')
+
+  console.log('offer OUTSIDE: ', currentOffer)
+  console.log('peerA OUTSIDE: ', peerA)
+
+//  console.log('peerA is:', peerA)
+//  console.log('currentOffer:', currentOffer)
   // Set up listeners HERE
   useEffect(() => {
 
@@ -27,57 +32,43 @@ const App = () => {
     })
 
     // Receives message delivered via SERVER
-    socket.on('message', (msg) => {
+    socket.on('message', msg => {
       console.log(`${socket.id} received message ${msg}`)
       setChatLog((chatLog)=>[...chatLog, msg])
     });
 
     // When receives a 'startP2P' signal, 
-    socket.on('startP2P', (isInitiator) => {
-      console.log('In Client, statrP2p')
-    // sets the local variable p2pIsOn as true. used for disabling buttons etc.      
+    socket.on('startP2P', isInitiator => {
+      console.log(`I'm, ${socket.id} and startingP2P. isInitiator is ${isInitiator}`)
+      // sets the local variable p2pIsOn as true. used for disabling buttons etc.      
       setp2pIsOn(true)
     
-    // constructs a Peer object that symbolises the other peer node. 
-    // constructing a Peer automatically fires a 'signal' + data to this client itself
-    // if isInitiator is true, then data for establishing a connection is generated.
-      const temp_peerA = new Peer({ initiator: isInitiator, trickle: false })
-      console.log('temp_peerA is ', temp_peerA)
-      
-    // setting up listeners for new Peer  
+      // constructs a Peer object that symbolises the other peer node. 
+      // constructing a Peer automatically fires a 'signal' + data to this client itself
+      // if isInitiator is true, then data for establishing a connection is generated.
+      const temp_peer = new Peer({ initiator: isInitiator, trickle: false })
 
-    // if isInitiator is true, data for the connection offer (called data) is sent back to the server
-      temp_peerA.on('signal', (data) => {
-        console.log('emitting offer info to server')
-        if (isInitiator) {
-          socket.emit('offer', {data: data})
-        }
-      })
-
-      temp_peerA.on('connect', () => {
-        console.log('ConnecteCOONNEDCTED ')
-      })
-
-      temp_peerA.on('data', data => {
-        console.log('Received data FROM PERA!!:)', data)
-      })
-
-      console.log('now going to set peer A for realz')
-      setPeerA(temp_peerA)
+      setPeerA(temp_peer)
+    
     })
-
-    socket.on('connect_to_initiator', (data) => {
+        
+    socket.on('connect_to_initiator', data => {
       console.log('In Client, Conecting to initasotr')
-      setTimeout(1000)
       peerA.signal(data)
     })
 
     // Listening for any connection offers from the server
-    socket.on('request_sent', (data) => {
-      setReceivedRequest(true)
-      setCurrentOffer(data)
+    socket.on('request_sent', data => {
+      console.log('arrived to request_sent!')
+      setp2pIsOn(true)
+//      setInitiator(false)
+      const temp_peer = new Peer({ initiator: false, trickle: false })
+      console.log('temp_peer2 that was created in request_sent:', temp_peer)
+      setPeerA(temp_peer)
+
     })
 
+    // this step is necessary to prevent creating the listeners many times
     return () => {
       socket.off('message');
       socket.off('connect');
@@ -88,11 +79,24 @@ const App = () => {
 
   }, [])
 
-  // useEffect(() => {
-  //   if(p2pIsOn) {
-      
-  //   }
-  // }, [p2pIsOn])
+  // When peerA changes from null to Peer, creates listeners
+  useEffect(() => {
+    if (peerA) {
+      peerA.on('signal', data => {
+        console.log('peerA data: ', data)
+        setCurrentOffer(data)
+        
+        setTimeout(() => {
+          console.log('request_sent, peer A after assignment: ', peerA)
+          peerA.signal(data)
+        }, "2000")
+      })
+      return () => {
+        peerA.off('signal')
+      }
+
+    }
+  }, [peerA])
   
   // Checks whether to send msg to server or peers
   function sendMessage (name, id, message) {
@@ -127,7 +131,6 @@ const App = () => {
   // This will start a P2P connection
   // by telling the server to start it for EVERYONE
   const goP2P = () => {
-    console.log('going private')
     socket.emit('goP2P')
   }
 
