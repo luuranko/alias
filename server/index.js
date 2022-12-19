@@ -3,8 +3,8 @@ const app = express()
 const cors = require("cors")
 const http = require('http').Server(app);
 const PORT = process.env.PORT || 4000
-const url = "https://fanciful-melomakarona-4b65c1.netlify.app/"
-// const url = "http://localhost:3000"
+// const url = "https://fanciful-melomakarona-4b65c1.netlify.app/"
+const url = "http://localhost:3000"
 const socketIO = require('socket.io')(http, {
   cors: {
       origin: url
