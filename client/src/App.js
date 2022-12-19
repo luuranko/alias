@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import ChatBox from './Chatbox';
 import socketIO from "socket.io-client"
@@ -16,8 +16,8 @@ const App = () => {
   const [selfPeer, setSelfPeer] = useState(null)
   const [currentOffer, setCurrentOffer] = useState('')
 
-  console.log('offer OUTSIDE: ', currentOffer)
-  console.log('peerA OUTSIDE: ', peerA)
+  console.log('offer : ', currentOffer)
+  console.log('peerA : ', peerA)
 
   // Set up listeners HERE
   useEffect(() => {
