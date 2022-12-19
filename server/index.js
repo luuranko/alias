@@ -2,13 +2,16 @@ const express = require("express")
 const app = express()
 const cors = require("cors")
 const http = require('http').Server(app);
-const PORT = 4000
+const PORT = process.env.PORT || 4000
+const url = "https://fanciful-melomakarona-4b65c1.netlify.app/"
+// const url = "http://localhost:3000"
 const socketIO = require('socket.io')(http, {
   cors: {
-      origin: "http://localhost:3000"
+      origin: url
   }
 });
 app.use(cors())
+app.use(express.static('build'))
 
 var peers = {}
 var peerLookup = []
@@ -34,7 +37,6 @@ socketIO.on('connection', function (socket) {
   // Catches offer data sent by clients, and sends it to the second node in peerLookup using signal 'request_sent'
   socket.on('offer', (data) => {
     console.log('Received offer data', data)
-//    sendOffer(peerLookup[1], data)
     socket.to(peerLookup[1]).emit('request_sent', data)
   });
 
@@ -51,10 +53,10 @@ socketIO.on('connection', function (socket) {
     console.log('peerlookup[0]: ', peerLookup[0])
     console.log('peerlookup[1]:', peerLookup[1])
     socketIO.to(peerLookup[0]).emit('startP2P', true)
-//    socketIO.to(peerLookup[1]).emit('startP2P', false)
   })
 
   socket.on('accept_request', (data) => {
+    console.log('in accept_request')
     socketIO.to(socket).emit('connect_to_initiator', data)
   })
 });
