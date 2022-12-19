@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui": "rm -rf build && cd ../client/ && npm run build && cp -r build ../server"
   },
+  "proxy": "http://localhost:4000",
   "author": "",
   "license": "ISC",
   "dependencies": {
